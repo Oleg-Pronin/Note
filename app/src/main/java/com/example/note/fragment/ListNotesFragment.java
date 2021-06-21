@@ -25,8 +25,6 @@ import java.util.HashMap;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ListNotesFragment#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class ListNotesFragment extends Fragment {
 
@@ -62,15 +60,12 @@ public class ListNotesFragment extends Fragment {
 
         isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
 
-        // Если это не первое создание, то восстановим текущую позицию
         if (savedInstanceState != null) {
-            // Восстановление текущей позиции.
             note = savedInstanceState.getParcelable(CURRENT_NOTE);
         } else {
             note = null;
         }
 
-        // Если можно нарисовать рядом герб, то сделаем это
         if (isLandscape && note != null) {
             showDetailNote(note);
         }
@@ -105,16 +100,14 @@ public class ListNotesFragment extends Fragment {
     }
 
     private void showDetailNote(Note note) {
-        // Создаём новый фрагмент с текущей позицией для вывода герба
         DetailNoteFragment detail = DetailNoteFragment.newInstance(note);
-        // Выполняем транзакцию по замене фрагмента
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         if (isLandscape) {
-            fragmentTransaction.replace(R.id.detailNotes, detail); // замена фрагмента
+            fragmentTransaction.replace(R.id.detailNotes, detail);
         } else {
-            fragmentTransaction.replace(R.id.listNotes, detail); // замена фрагмента
+            fragmentTransaction.replace(R.id.listNotes, detail);
         }
 
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
