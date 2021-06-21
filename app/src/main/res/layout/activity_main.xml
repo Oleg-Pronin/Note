@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity" >
+    android:layout_height="match_parent">
 
-    <ScrollView
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/listNotes"
+        android:name="com.example.note.fragment.ListNotesFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/scroll">
-        <LinearLayout
-            android:id="@+id/linLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+        android:layout_height="match_parent" />
 
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+</FrameLayout>
