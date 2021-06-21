@@ -55,6 +55,10 @@ public class DetailNoteFragment extends Fragment {
                 false
         );
 
+        if (note == null) {
+            return view;
+        }
+
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("dd.MM.yyyy H:m:s");
 
         TextView noteName = view.findViewById(R.id.detailNoteTitle);

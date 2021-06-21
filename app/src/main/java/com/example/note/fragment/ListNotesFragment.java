@@ -42,8 +42,8 @@ public class ListNotesFragment extends Fragment {
             noteList.put(
                     String.valueOf(i),
                     new Note(
-                            "Название " + i,
-                            "Краткое описание " + i,
+                            "Название заметки №" + i,
+                            "Краткое описание заметки №" + i,
                             new Date()
                     )
             );
@@ -67,11 +67,11 @@ public class ListNotesFragment extends Fragment {
             // Восстановление текущей позиции.
             note = savedInstanceState.getParcelable(CURRENT_NOTE);
         } else {
-            note = noteList.get("1");
+            note = null;
         }
 
         // Если можно нарисовать рядом герб, то сделаем это
-        if (isLandscape) {
+        if (isLandscape && note != null) {
             showDetailNote(note);
         }
     }

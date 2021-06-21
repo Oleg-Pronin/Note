@@ -7,7 +7,7 @@
     <!-- Фрагмент с выбором городов -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/listNotes"
-        android:name="com.example.citiesfragment.CitiesFragment"
+        android:name="com.example.note.fragment.ListNotesFragment"
         android:layout_width="0px"
         android:layout_height="match_parent"
         android:layout_weight="1" />
@@ -17,6 +17,5 @@
         android:id="@+id/detailNotes"
         android:layout_width="0px"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="?android:attr/detailsElementBackground" />
+        android:layout_weight="1" />
 </LinearLayout>
