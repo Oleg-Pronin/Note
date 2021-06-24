@@ -104,6 +104,8 @@ public class ListNotesFragment extends Fragment {
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
+        fragmentTransaction.addToBackStack(null);
+
         if (isLandscape) {
             fragmentTransaction.replace(R.id.detailNotes, detail);
         } else {
