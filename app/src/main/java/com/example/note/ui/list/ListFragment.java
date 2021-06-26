@@ -1,4 +1,4 @@
-package com.example.note.fragment;
+package com.example.note.ui.list;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.note.R;
 import com.example.note.entity.Note;
+import com.example.note.ui.detail.DetailFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,14 +27,14 @@ import java.util.HashMap;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ListNotesFragment extends Fragment {
+public class ListFragment extends Fragment {
 
     private boolean isLandscape;
     private Note note;
     public static final String CURRENT_NOTE = "CurrentNote";
     HashMap<String, Note> noteList;
 
-    public ListNotesFragment() {
+    public ListFragment() {
         noteList = new HashMap<>();
 
         for (int i = 0; i < 20; i++) {
@@ -50,10 +51,9 @@ public class ListNotesFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_list_notes, container, false);
+        return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
-    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initNoteList();
@@ -100,17 +100,13 @@ public class ListNotesFragment extends Fragment {
     }
 
     private void showDetailNote(Note note) {
-        DetailNoteFragment detail = DetailNoteFragment.newInstance(note);
+        DetailFragment detail = DetailFragment.newInstance(note);
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         fragmentTransaction.addToBackStack(null);
 
-        if (isLandscape) {
-            fragmentTransaction.replace(R.id.detailNotes, detail);
-        } else {
-            fragmentTransaction.replace(R.id.listNotes, detail);
-        }
+        fragmentTransaction.replace(R.id.fragment_container, detail);
 
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         fragmentTransaction.commit();
