@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.note.R;
-import com.example.note.entity.Note;
+import com.example.note.data.NoteData;
 
 import java.text.SimpleDateFormat;
 
@@ -21,13 +21,13 @@ import java.text.SimpleDateFormat;
  */
 public class DetailFragment extends Fragment {
     public static final String ARG_NOTE = "Note";
-    private Note note;
+    private NoteData noteData;
 
-    public static DetailFragment newInstance(Note note) {
+    public static DetailFragment newInstance(NoteData noteData) {
         DetailFragment fragment = new DetailFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(ARG_NOTE, note);
+        args.putParcelable(ARG_NOTE, noteData);
 
         fragment.setArguments(args);
         return fragment;
@@ -38,7 +38,7 @@ public class DetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            note = getArguments().getParcelable(ARG_NOTE);
+            noteData = getArguments().getParcelable(ARG_NOTE);
         }
     }
 
@@ -54,20 +54,20 @@ public class DetailFragment extends Fragment {
                 false
         );
 
-        if (note == null) {
+        if (noteData == null) {
             return view;
         }
 
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("dd.MM.yyyy H:m:s");
 
         TextView noteName = view.findViewById(R.id.detailTitle);
-        noteName.setText(note.getName());
+        noteName.setText(noteData.getName());
 
         TextView notePrev = view.findViewById(R.id.detailDescription);
-        notePrev.setText(note.getDescription());
+        notePrev.setText(noteData.getDescription());
 
         TextView noteDate = view.findViewById(R.id.detailDate);
-        noteDate.setText(formatForDateNow.format(note.getCreateDate()));
+        noteDate.setText(formatForDateNow.format(noteData.getCreateDate()));
 
         return view;
     }

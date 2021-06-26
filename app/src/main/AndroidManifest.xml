@@ -3,14 +3,16 @@
     package="com.example.note">
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_icon_main"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_icon_main_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Note">
+        android:theme="@style/Theme.Note.NoActionBar"
+        android:fullBackupContent="false">
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="fullSensor"
             android:theme="@style/Theme.Note.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

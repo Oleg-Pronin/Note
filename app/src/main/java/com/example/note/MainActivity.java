@@ -93,9 +93,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addFragment(Fragment fragment) {
+        //Получить менеджер фрагментов
         FragmentManager fragmentManager = getSupportFragmentManager();
+        // Открыть транзакцию
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
         fragmentTransaction.replace(R.id.fragment_container, fragment);
 
         if (!(fragment instanceof ListFragment)) {

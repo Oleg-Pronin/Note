@@ -8,6 +8,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Добавление" />
+        android:text="Фрагмент добавления и редактирования для ДЗ №9" />
 
 </FrameLayout>

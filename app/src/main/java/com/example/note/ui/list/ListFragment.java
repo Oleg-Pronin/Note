@@ -1,6 +1,6 @@
 package com.example.note.ui.list;
 
-import android.content.res.Configuration;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -8,99 +8,73 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.example.note.R;
-import com.example.note.entity.Note;
+import com.example.note.data.NoteData;
+import com.example.note.data.NotesSource;
+import com.example.note.data.NotesSourceImpl;
 import com.example.note.ui.detail.DetailFragment;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ListFragment extends Fragment {
-
-    private boolean isLandscape;
-    private Note note;
-    public static final String CURRENT_NOTE = "CurrentNote";
-    HashMap<String, Note> noteList;
-
-    public ListFragment() {
-        noteList = new HashMap<>();
-
-        for (int i = 0; i < 20; i++) {
-            noteList.put(
-                    String.valueOf(i),
-                    new Note(
-                            "Название заметки №" + i,
-                            "Краткое описание заметки №" + i,
-                            new Date()
-                    )
-            );
-        }
-    }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_list, container, false);
+    public View onCreateView(
+            LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState
+    ) {
+        View view = inflater.inflate(R.layout.fragment_list, container, false);
+
+        initNoteList(view);
+
+        return view;
     }
 
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        initNoteList();
-
-        isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-
-        if (savedInstanceState != null) {
-            note = savedInstanceState.getParcelable(CURRENT_NOTE);
-        } else {
-            note = null;
-        }
-
-        if (isLandscape && note != null) {
-            showDetailNote(note);
-        }
     }
 
-    private void initNoteList() {
-        ScrollView scrollView = (ScrollView) getView();
-        assert scrollView != null;
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private void initNoteList(View listView) {
+        RecyclerView recyclerView = listView.findViewById(R.id.recycler_view_lines);
+        // Получим источник данных для списка
+        NotesSource source = new NotesSourceImpl();
 
-        LinearLayout linLayout = scrollView.findViewById(R.id.linLayout);
-        LayoutInflater ltInflater = getLayoutInflater();
+        // Эта установка служит для повышения производительности системы
+        // Указывает, что элементы одинаковые по размеру
+        recyclerView.setHasFixedSize(true);
 
-        SimpleDateFormat formatForDateNow = new SimpleDateFormat("dd.MM.yyyy H:m:s");
+        // Будем работать со встроенным менеджером
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        recyclerView.setLayoutManager(layoutManager);
 
-        noteList.forEach((s, note) -> {
-            View item = ltInflater.inflate(R.layout.item, linLayout, false);
-            item.setHapticFeedbackEnabled(true);
+        // Установим адаптер
+        final ListAdapter adapter = new ListAdapter(source);
+        recyclerView.setAdapter(adapter);
 
-            TextView noteName = item.findViewById(R.id.listNoteTitle);
-            noteName.setText(note.getName());
+        // Добавим разделитель карточек
+        DividerItemDecoration itemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
+        itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator, null));
+        recyclerView.addItemDecoration(itemDecoration);
 
-            TextView notePrev = item.findViewById(R.id.listNotePrev);
-            notePrev.setText(note.getDescription());
-
-            TextView noteDate = item.findViewById(R.id.listNoteDate);
-            noteDate.setText(formatForDateNow.format(note.getCreateDate()));
-
-            linLayout.addView(item);
-
-            item.setOnClickListener(v -> showDetailNote(note));
+        adapter.setOnItemClickListener((view, position) -> {
+            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+            showDetailNote(source.getNoteData(position));
         });
     }
 
-    private void showDetailNote(Note note) {
-        DetailFragment detail = DetailFragment.newInstance(note);
+    private void showDetailNote(NoteData noteData) {
+        DetailFragment detail = DetailFragment.newInstance(noteData);
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
