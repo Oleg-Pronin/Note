@@ -17,8 +17,6 @@ import com.example.note.ui.list.ListFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.Objects;
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
