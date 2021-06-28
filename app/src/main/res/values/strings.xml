@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Notes</string>
+    <string name="app_name">Заметки</string>
+    <string name="navigation_drawer_open">Панель навигации открыта</string>
+    <string name="navigation_drawer_close">Панель навигации закрыта</string>
+    <string name="nav_header_title">Олег Пронин</string>
+    <string name="nav_header_subtitle">test@test.com</string>
+    <string name="nav_header_desc">Аватарка пользователя</string>
+    <string name="action_settings">Настройки</string>
+
+    <string name="menu_list">Список</string>
+    <string name="menu_about">О приложении</string>
 </resources>

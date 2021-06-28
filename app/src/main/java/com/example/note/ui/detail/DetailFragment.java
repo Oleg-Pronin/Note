@@ -1,34 +1,33 @@
-package com.example.note.fragment;
+package com.example.note.ui.detail;
 
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.note.R;
-import com.example.note.entity.Note;
+import com.example.note.data.NoteData;
 
 import java.text.SimpleDateFormat;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link DetailNoteFragment#newInstance} factory method to
+ * Use the {@link DetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class DetailNoteFragment extends Fragment {
+public class DetailFragment extends Fragment {
     public static final String ARG_NOTE = "Note";
-    private Note note;
+    private NoteData noteData;
 
-    public static DetailNoteFragment newInstance(Note note) {
-        DetailNoteFragment fragment = new DetailNoteFragment();
+    public static DetailFragment newInstance(NoteData noteData) {
+        DetailFragment fragment = new DetailFragment();
 
         Bundle args = new Bundle();
-        args.putParcelable(ARG_NOTE, note);
+        args.putParcelable(ARG_NOTE, noteData);
 
         fragment.setArguments(args);
         return fragment;
@@ -39,7 +38,7 @@ public class DetailNoteFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            note = getArguments().getParcelable(ARG_NOTE);
+            noteData = getArguments().getParcelable(ARG_NOTE);
         }
     }
 
@@ -50,25 +49,25 @@ public class DetailNoteFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         View view = inflater.inflate(
-                R.layout.fragment_detail_note,
+                R.layout.fragment_detail,
                 container,
                 false
         );
 
-        if (note == null) {
+        if (noteData == null) {
             return view;
         }
 
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("dd.MM.yyyy H:m:s");
 
-        TextView noteName = view.findViewById(R.id.detailNoteTitle);
-        noteName.setText(note.getName());
+        TextView noteName = view.findViewById(R.id.detailTitle);
+        noteName.setText(noteData.getName());
 
-        TextView notePrev = view.findViewById(R.id.detailNotePrev);
-        notePrev.setText(note.getDescription());
+        TextView notePrev = view.findViewById(R.id.detailDescription);
+        notePrev.setText(noteData.getDescription());
 
-        TextView noteDate = view.findViewById(R.id.detailNoteDate);
-        noteDate.setText(formatForDateNow.format(note.getCreateDate()));
+        TextView noteDate = view.findViewById(R.id.detailDate);
+        noteDate.setText(formatForDateNow.format(noteData.getCreateDate()));
 
         return view;
     }
