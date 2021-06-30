@@ -33,6 +33,6 @@
         android:elevation="6dp"
         app:borderWidth="0dp"
         app:fabSize="normal"
-        app:srcCompat="@drawable/ic_add" />
+        app:srcCompat="@drawable/ic_new_elem" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

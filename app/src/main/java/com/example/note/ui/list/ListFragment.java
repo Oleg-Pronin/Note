@@ -63,9 +63,9 @@ public class ListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         // Добавим разделитель карточек
-        DividerItemDecoration itemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
-        itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator, null));
-        recyclerView.addItemDecoration(itemDecoration);
+//        DividerItemDecoration itemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
+//        itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator, null));
+//        recyclerView.addItemDecoration(itemDecoration);
 
         adapter.setOnItemClickListener((view, position) -> {
             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);

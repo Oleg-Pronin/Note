@@ -5,7 +5,9 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="15dp"
     app:cardElevation="5dp"
-    android:layout_margin="5dp">
+    android:layout_marginTop="10dp"
+    android:layout_marginStart="6dp"
+    android:layout_marginEnd="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +22,8 @@
             android:autoSizeTextType="none"
             android:textAllCaps="false"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginBottom="6dp"/>
 
         <TextView
             android:id="@+id/listNoteDate"
