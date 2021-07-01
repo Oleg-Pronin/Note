@@ -23,6 +23,10 @@ public class Navigation {
             fragmentTransaction.addToBackStack(null);
         }
 
+        if (useBackStack) {
+            fragmentTransaction.addToBackStack(null);
+        }
+
         // Закрыть транзакцию
         fragmentTransaction.commit();
     }
