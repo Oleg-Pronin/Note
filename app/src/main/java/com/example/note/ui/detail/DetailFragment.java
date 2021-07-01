@@ -61,13 +61,13 @@ public class DetailFragment extends Fragment {
         SimpleDateFormat formatForDateNow = new SimpleDateFormat("dd.MM.yyyy H:m:s");
 
         TextView noteName = view.findViewById(R.id.detailTitle);
-        noteName.setText(noteData.getName());
+        noteName.setText(noteData.getTitle());
 
         TextView notePrev = view.findViewById(R.id.detailDescription);
         notePrev.setText(noteData.getDescription());
 
         TextView noteDate = view.findViewById(R.id.detailDate);
-        noteDate.setText(formatForDateNow.format(noteData.getCreateDate()));
+        noteDate.setText(formatForDateNow.format(noteData.getDate()));
 
         return view;
     }

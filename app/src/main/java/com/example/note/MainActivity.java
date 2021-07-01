@@ -10,7 +10,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
+import android.view.View;
 
+import com.example.note.observe.Publisher;
 import com.example.note.ui.about.AboutFragment;
 import com.example.note.ui.add.AddFragment;
 import com.example.note.ui.list.ListFragment;
@@ -18,14 +20,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
+    private Navigation navigation;
+    private final Publisher publisher = new Publisher();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        navigation = new Navigation(getSupportFragmentManager());
 
         initView();
-        addFragment(new com.example.note.ui.list.ListFragment());
+        getNavigation().addFragment(new com.example.note.ui.list.ListFragment(), false);
     }
 
     private void initView() {
@@ -37,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar initToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         return toolbar;
     }
@@ -62,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (navigateFragment(id)){
+            if (navigateFragment(id)) {
                 drawer.closeDrawer(GravityCompat.START);
                 return true;
             }
@@ -72,9 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initFloatingBtn() {
-        FloatingActionButton floatingBtn = findViewById(R.id.fab);
-
-        floatingBtn.setOnClickListener(v -> addFragment(new AddFragment()));
+        findViewById(R.id.fab).setOnClickListener(v -> addFragment(new AddFragment()));
     }
 
     private boolean navigateFragment(int id) {
@@ -90,6 +95,13 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    @Override
+    public void onBackPressed() {
+        setVisibilityFloatingBtn(true);
+
+        super.onBackPressed();
+    }
+
     public void addFragment(Fragment fragment) {
         //Получить менеджер фрагментов
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -101,7 +113,37 @@ public class MainActivity extends AppCompatActivity {
             fragmentTransaction.addToBackStack(null);
         }
 
+        // Если fragment добавления, то скрытвать кнопку floatingBtn для добавления нового элемента
+        setVisibilityFloatingBtn(!(fragment instanceof AddFragment));
+
         // Закрыть транзакцию
         fragmentTransaction.commit();
+    }
+
+
+    private void setVisibilityFloatingBtn(boolean isVisibility) {
+        FloatingActionButton floatingBtn = findViewById(R.id.fab);
+
+        if (isVisibility) {
+            if (floatingBtn.getVisibility() != View.VISIBLE) {
+                floatingBtn.setVisibility(View.VISIBLE);
+            }
+        } else {
+            floatingBtn.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    public Navigation getNavigation() {
+        return navigation;
+    }
+
+    public Publisher getPublisher() {
+        return publisher;
     }
 }

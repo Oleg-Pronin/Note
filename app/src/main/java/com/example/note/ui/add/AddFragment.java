@@ -1,14 +1,25 @@
 package com.example.note.ui.add;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 
+import com.example.note.MainActivity;
 import com.example.note.R;
+import com.example.note.data.NoteData;
+import com.example.note.observe.Publisher;
+import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -16,34 +27,22 @@ import com.example.note.R;
  * create an instance of this fragment.
  */
 public class AddFragment extends Fragment {
+    private static final String ARG_NOTE_DATA = "Param_NoteData";
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    // Данные по карточке
+    private NoteData noteData;
+    // Publisher для помощи в обмене данных
+    private Publisher publisher;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private TextInputEditText title;
+    private TextInputEditText description;
+    private DatePicker datePicker;
 
-    public AddFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AddFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AddFragment newInstance(String param1, String param2) {
+    // Для редактирования данных
+    public static AddFragment newInstance(NoteData noteData) {
         AddFragment fragment = new AddFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putParcelable(ARG_NOTE_DATA, noteData);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,15 +51,79 @@ public class AddFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            noteData = getArguments().getParcelable(ARG_NOTE_DATA);
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add, container, false);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        MainActivity activity = (MainActivity) context;
+        publisher = activity.getPublisher();
+    }
+
+    @Override
+    public void onDetach() {
+        publisher = null;
+        super.onDetach();
+    }
+
+    @Override
+    public View onCreateView(
+            LayoutInflater inflater,
+            ViewGroup container,
+            Bundle savedInstanceState
+    ) {
+        View view = inflater.inflate(R.layout.fragment_add, container, false);
+
+        initView(view);
+
+        if (noteData != null) {
+            populateView();
+        }
+
+        return view;
+    }
+
+    private NoteData collectNoteData() {
+        String title = Objects.requireNonNull(this.title.getText()).toString();
+        String description = Objects.requireNonNull(this.description.getText()).toString();
+        Date date = getDateFromDatePicker();
+
+        return new NoteData(title, description, date);
+    }
+
+    // Получение даты из DatePicker
+    private Date getDateFromDatePicker() {
+        Calendar cal = Calendar.getInstance();
+
+        cal.set(Calendar.YEAR, this.datePicker.getYear());
+        cal.set(Calendar.MONTH, this.datePicker.getMonth());
+        cal.set(Calendar.DAY_OF_MONTH, this.datePicker.getDayOfMonth());
+
+        return cal.getTime();
+    }
+
+    private void initView(View view) {
+        title = view.findViewById(R.id.inputTitle);
+        description = view.findViewById(R.id.inputDescription);
+        datePicker = view.findViewById(R.id.inputDate);
+    }
+
+    private void populateView() {
+        title.setText(noteData.getTitle());
+        description.setText(noteData.getDescription());
+        initDatePicker(noteData.getDate());
+    }
+
+    // Установка даты в DatePicker
+    private void initDatePicker(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        this.datePicker.init(calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH),
+                null);
     }
 }

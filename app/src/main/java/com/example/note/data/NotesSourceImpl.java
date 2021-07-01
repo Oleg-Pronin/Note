@@ -1,6 +1,7 @@
 package com.example.note.data;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -11,13 +12,11 @@ public class NotesSourceImpl implements NotesSource {
         dataSource = new ArrayList<>();
 
         for (int i = 0; i < 20; i++) {
-            dataSource.add(
-                    new NoteData(
-                            "Название заметки №" + i,
-                            "Краткое описание заметки №" + i,
-                            new Date()
-                    )
-            );
+            addNoteData(new NoteData(
+                    "Название заметки №" + i,
+                    "Краткое описание заметки №" + i,
+                    Calendar.getInstance().getTime()
+            ));
         }
     }
 
@@ -27,7 +26,27 @@ public class NotesSourceImpl implements NotesSource {
     }
 
     @Override
-    public int size() {
+    public int getSize() {
         return dataSource.size();
+    }
+
+    @Override
+    public void addNoteData(NoteData noteData) {
+        dataSource.add(noteData);
+    }
+
+    @Override
+    public void updateNoteData(int position, NoteData noteData) {
+        dataSource.set(position, noteData);
+    }
+
+    @Override
+    public void deleteNoteData(int position) {
+        dataSource.remove(position);
+    }
+
+    @Override
+    public void clearNoteData() {
+        dataSource.clear();
     }
 }
