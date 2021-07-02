@@ -1,13 +1,12 @@
 package com.example.note.ui.list;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,20 +18,51 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import com.example.note.MainActivity;
+import com.example.note.Navigation;
 import com.example.note.R;
-import com.example.note.data.NoteData;
 import com.example.note.data.NotesSource;
 import com.example.note.data.NotesSourceImpl;
+import com.example.note.observe.Publisher;
+import com.example.note.ui.add.NoteFragment;
 import com.example.note.ui.detail.DetailFragment;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ListFragment extends Fragment {
-    NotesSource source;
-    ListAdapter adapter;
+    private NotesSource source;
+    private ListAdapter adapter;
+    private Navigation navigation;
+    private Publisher publisher;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        MainActivity activity = (MainActivity) context;
+        navigation = activity.getNavigation();
+        publisher = activity.getPublisher();
+    }
+
+    @Override
+    public void onDetach() {
+        navigation = null;
+        publisher = null;
+        super.onDetach();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        /*
+         * Получим источник данных для списка
+         * Поскольку onCreateView запускается каждый раз
+         * при возврате в фрагмент, данные надо создавать один раз
+         * */
+        source = new NotesSourceImpl();
+    }
 
     @Override
     public View onCreateView(
@@ -42,6 +72,7 @@ public class ListFragment extends Fragment {
     ) {
         View view = inflater.inflate(R.layout.fragment_list, container, false);
 
+        initFloatingBtn(view);
         initNoteList(view);
         setHasOptionsMenu(true);
 
@@ -55,8 +86,6 @@ public class ListFragment extends Fragment {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void initNoteList(View listView) {
         RecyclerView recyclerView = listView.findViewById(R.id.recycler_view_lines);
-        // Получим источник данных для списка
-        source = new NotesSourceImpl();
 
         // Эта установка служит для повышения производительности системы
         // Указывает, что элементы одинаковые по размеру
@@ -70,28 +99,32 @@ public class ListFragment extends Fragment {
         adapter = new ListAdapter(source, this);
         recyclerView.setAdapter(adapter);
 
-        // Добавим разделитель карточек
-//        DividerItemDecoration itemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
-//        itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator, null));
-//        recyclerView.addItemDecoration(itemDecoration);
-
         adapter.setOnItemClickListener((view, position) -> {
             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-            showDetailNote(source.getNoteData(position));
+            navigation.addFragment(
+                    DetailFragment.newInstance(source.getNoteData(position)),
+                    true
+            );
         });
     }
 
-    private void showDetailNote(NoteData noteData) {
-        DetailFragment detail = DetailFragment.newInstance(noteData);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    private void initFloatingBtn(View view) {
+        FloatingActionButton floatingBtn = view.findViewById(R.id.fab);
 
-        fragmentTransaction.addToBackStack(null);
+        if (floatingBtn.getVisibility() == View.INVISIBLE) {
+            floatingBtn.setVisibility(View.VISIBLE);
+        }
 
-        fragmentTransaction.replace(R.id.fragment_container, detail);
+        floatingBtn.setOnClickListener(v -> onClickAddNote());
+    }
 
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.commit();
+    private void onClickAddNote() {
+        navigation.addFragment(new NoteFragment(), true);
+
+        publisher.subscribe(noteData -> {
+            source.addNoteData(noteData);
+            adapter.notifyItemInserted(source.getSize() - 1);
+        });
     }
 
     @Override
@@ -101,20 +134,20 @@ public class ListFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_clear:
-                source.clearNoteData();
-                adapter.notifyDataSetChanged();
-                return true;
+        if (item.getItemId() == R.id.action_clear) {
+            source.clearNoteData();
+            adapter.notifyDataSetChanged();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onCreateContextMenu(@NonNull ContextMenu menu,
-                                    @NonNull View v,
-                                    @Nullable ContextMenu.ContextMenuInfo menuInfo
+    public void onCreateContextMenu(
+        @NonNull ContextMenu menu,
+        @NonNull View v,
+        @Nullable ContextMenu.ContextMenuInfo menuInfo
     ) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = requireActivity().getMenuInflater();
@@ -125,18 +158,24 @@ public class ListFragment extends Fragment {
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int position = adapter.getMenuPosition();
-        switch(item.getItemId()) {
-            case R.id.card_menu_item_update:
-                // Do some stuff
-                Toast.makeText(getContext(), "Обновить №" + position, Toast.LENGTH_SHORT).show();
 
-                adapter.notifyItemChanged(position);
+        switch (item.getItemId()) {
+            case R.id.card_menu_item_update:
+                navigation.addFragment(
+                        NoteFragment.newInstance(source.getNoteData(position)),
+                        true
+                );
+
+                publisher.subscribe(noteData -> {
+                    source.updateNoteData(position, noteData);
+                    adapter.notifyItemChanged(position);
+                });
+
                 return true;
             case R.id.card_menu_item_delete:
                 source.deleteNoteData(position);
                 adapter.notifyItemRemoved(position);
 
-                Toast.makeText(getContext(), "Удалить №" + position, Toast.LENGTH_SHORT).show();
                 return true;
         }
 

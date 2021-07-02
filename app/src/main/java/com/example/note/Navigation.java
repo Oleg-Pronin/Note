@@ -4,9 +4,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.example.note.ui.add.AddFragment;
-import com.example.note.ui.list.ListFragment;
-
 public class Navigation {
     private final FragmentManager fragmentManager;
 
@@ -19,13 +16,12 @@ public class Navigation {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragment);
 
-        if (!(fragment instanceof ListFragment)) {
-            fragmentTransaction.addToBackStack(null);
-        }
-
         if (useBackStack) {
             fragmentTransaction.addToBackStack(null);
         }
+
+        // Устанавливает стандартную анимацию
+        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
         // Закрыть транзакцию
         fragmentTransaction.commit();

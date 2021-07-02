@@ -32,7 +32,7 @@ public class NotesSourceImpl implements NotesSource {
 
     @Override
     public void addNoteData(NoteData noteData) {
-        dataSource.add(noteData);
+        dataSource.add(0, noteData);
     }
 
     @Override

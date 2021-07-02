@@ -23,10 +23,10 @@ import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link AddFragment#newInstance} factory method to
+ * Use the {@link NoteFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class AddFragment extends Fragment {
+public class NoteFragment extends Fragment {
     private static final String ARG_NOTE_DATA = "Param_NoteData";
 
     // Данные по карточке
@@ -39,17 +39,19 @@ public class AddFragment extends Fragment {
     private DatePicker datePicker;
 
     // Для редактирования данных
-    public static AddFragment newInstance(NoteData noteData) {
-        AddFragment fragment = new AddFragment();
+    public static NoteFragment newInstance(NoteData noteData) {
+        NoteFragment fragment = new NoteFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_NOTE_DATA, noteData);
         fragment.setArguments(args);
+
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             noteData = getArguments().getParcelable(ARG_NOTE_DATA);
         }
@@ -85,23 +87,26 @@ public class AddFragment extends Fragment {
         return view;
     }
 
+    // Здесь соберем данные из views
+    @Override
+    public void onStop() {
+        super.onStop();
+        noteData = collectNoteData();
+    }
+
+    // Здесь передадим данные в паблишер
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        publisher.notifySingle(noteData);
+    }
+
     private NoteData collectNoteData() {
         String title = Objects.requireNonNull(this.title.getText()).toString();
         String description = Objects.requireNonNull(this.description.getText()).toString();
         Date date = getDateFromDatePicker();
 
         return new NoteData(title, description, date);
-    }
-
-    // Получение даты из DatePicker
-    private Date getDateFromDatePicker() {
-        Calendar cal = Calendar.getInstance();
-
-        cal.set(Calendar.YEAR, this.datePicker.getYear());
-        cal.set(Calendar.MONTH, this.datePicker.getMonth());
-        cal.set(Calendar.DAY_OF_MONTH, this.datePicker.getDayOfMonth());
-
-        return cal.getTime();
     }
 
     private void initView(View view) {
@@ -125,5 +130,16 @@ public class AddFragment extends Fragment {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH),
                 null);
+    }
+
+    // Получение даты из DatePicker
+    private Date getDateFromDatePicker() {
+        Calendar cal = Calendar.getInstance();
+
+        cal.set(Calendar.YEAR, this.datePicker.getYear());
+        cal.set(Calendar.MONTH, this.datePicker.getMonth());
+        cal.set(Calendar.DAY_OF_MONTH, this.datePicker.getDayOfMonth());
+
+        return cal.getTime();
     }
 }
