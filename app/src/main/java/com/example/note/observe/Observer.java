@@ -1,6 +1,6 @@
 package com.example.note.observe;
 
-import com.example.note.data.NoteData;
+import com.example.note.data.entity.NoteData;
 
 /**
  * Интерфейс наблюдателя

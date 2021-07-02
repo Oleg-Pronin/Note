@@ -1,12 +1,13 @@
 package com.example.note.data;
 
+import com.example.note.data.entity.NoteData;
+
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 public class NotesSourceImpl implements NotesSource {
-    private final List<NoteData> dataSource;
+    private List<NoteData> dataSource;
 
     public NotesSourceImpl() {
         dataSource = new ArrayList<>();
@@ -22,6 +23,7 @@ public class NotesSourceImpl implements NotesSource {
 
     @Override
     public NotesSource init(NotesSourceResponse notesSourceResponse) {
+
         if (notesSourceResponse != null) {
             notesSourceResponse.initialized(this);
         }

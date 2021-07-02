@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.note.R;
-import com.example.note.data.NoteData;
+import com.example.note.data.entity.NoteData;
 import com.example.note.data.NotesSource;
 
 import java.text.SimpleDateFormat;

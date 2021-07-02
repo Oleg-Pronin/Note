@@ -1,5 +1,6 @@
 package com.example.note.data;
 
+import com.example.note.data.entity.NoteData;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 

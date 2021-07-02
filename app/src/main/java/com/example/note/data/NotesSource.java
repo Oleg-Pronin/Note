@@ -1,5 +1,7 @@
 package com.example.note.data;
 
+import com.example.note.data.entity.NoteData;
+
 public interface NotesSource {
     NotesSource init(NotesSourceResponse notesSourceResponse);
 

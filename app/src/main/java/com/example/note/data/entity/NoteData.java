@@ -1,4 +1,4 @@
-package com.example.note.data;
+package com.example.note.data.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;

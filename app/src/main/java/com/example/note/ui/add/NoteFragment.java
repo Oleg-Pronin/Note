@@ -13,7 +13,7 @@ import android.widget.DatePicker;
 
 import com.example.note.MainActivity;
 import com.example.note.R;
-import com.example.note.data.NoteData;
+import com.example.note.data.entity.NoteData;
 import com.example.note.observe.Publisher;
 import com.google.android.material.textfield.TextInputEditText;
 

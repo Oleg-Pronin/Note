@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.note.R;
-import com.example.note.data.NoteData;
+import com.example.note.data.entity.NoteData;
 
 import java.text.SimpleDateFormat;
 

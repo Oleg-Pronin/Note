@@ -1,7 +1,7 @@
 package com.example.note.observe;
 
 
-import com.example.note.data.NoteData;
+import com.example.note.data.entity.NoteData;
 
 import java.util.ArrayList;
 import java.util.List;
