@@ -21,6 +21,15 @@ public class NotesSourceImpl implements NotesSource {
     }
 
     @Override
+    public NotesSource init(NotesSourceResponse notesSourceResponse) {
+        if (notesSourceResponse != null) {
+            notesSourceResponse.initialized(this);
+        }
+
+        return this;
+    }
+
+    @Override
     public NoteData getNoteData(int position) {
         return dataSource.get(position);
     }

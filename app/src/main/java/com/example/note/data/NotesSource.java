@@ -1,6 +1,8 @@
 package com.example.note.data;
 
 public interface NotesSource {
+    NotesSource init(NotesSourceResponse notesSourceResponse);
+
     NoteData getNoteData(int position);
 
     int getSize();
