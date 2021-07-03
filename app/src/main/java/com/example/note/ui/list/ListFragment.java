@@ -24,7 +24,6 @@ import com.example.note.Navigation;
 import com.example.note.R;
 import com.example.note.data.NoteSourceFirebaseImpl;
 import com.example.note.data.NotesSource;
-import com.example.note.data.NotesSourceImpl;
 import com.example.note.observe.Publisher;
 import com.example.note.ui.add.NoteFragment;
 import com.example.note.ui.detail.DetailFragment;

@@ -2,10 +2,7 @@ package com.example.note.data;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.example.note.data.entity.NoteData;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
