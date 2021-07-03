@@ -9,20 +9,17 @@ import java.util.List;
 public class NotesSourceImpl implements NotesSource {
     private List<NoteData> dataSource;
 
-    public NotesSourceImpl() {
+    @Override
+    public NotesSource init(NotesSourceResponse notesSourceResponse) {
         dataSource = new ArrayList<>();
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 5; i++) {
             addNoteData(new NoteData(
                     "Название заметки №" + i,
                     "Краткое описание заметки №" + i,
                     Calendar.getInstance().getTime()
             ));
         }
-    }
-
-    @Override
-    public NotesSource init(NotesSourceResponse notesSourceResponse) {
 
         if (notesSourceResponse != null) {
             notesSourceResponse.initialized(this);

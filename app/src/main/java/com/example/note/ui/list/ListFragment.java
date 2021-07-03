@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import com.example.note.MainActivity;
 import com.example.note.Navigation;
 import com.example.note.R;
+import com.example.note.data.NoteSourceFirebaseImpl;
 import com.example.note.data.NotesSource;
 import com.example.note.data.NotesSourceImpl;
 import com.example.note.observe.Publisher;
@@ -37,6 +38,8 @@ public class ListFragment extends Fragment {
     private ListAdapter adapter;
     private Navigation navigation;
     private Publisher publisher;
+
+    private boolean isMoveToFirstPosition;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -54,17 +57,6 @@ public class ListFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        /*
-         * Получим источник данных для списка
-         * Поскольку onCreateView запускается каждый раз
-         * при возврате в фрагмент, данные надо создавать один раз
-         * */
-        source = new NotesSourceImpl();
-    }
-
-    @Override
     public View onCreateView(
             LayoutInflater inflater,
             ViewGroup container,
@@ -75,6 +67,12 @@ public class ListFragment extends Fragment {
         initFloatingBtn(view);
         initNoteList(view);
         setHasOptionsMenu(true);
+
+        source = new NoteSourceFirebaseImpl().init(notesSource -> {
+            adapter.notifyDataSetChanged();
+        });
+
+        adapter.setDataSource(source);
 
         return view;
     }
@@ -96,8 +94,13 @@ public class ListFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         // Установим адаптер
-        adapter = new ListAdapter(source, this);
+        adapter = new ListAdapter(this);
         recyclerView.setAdapter(adapter);
+
+        if (isMoveToFirstPosition && source.getSize() > 0) {
+            recyclerView.scrollToPosition(0);
+            isMoveToFirstPosition = false;
+        }
 
         adapter.setOnItemClickListener((view, position) -> {
             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
@@ -133,17 +136,6 @@ public class ListFragment extends Fragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_clear) {
-            source.clearNoteData();
-            adapter.notifyDataSetChanged();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onCreateContextMenu(
         @NonNull ContextMenu menu,
         @NonNull View v,
@@ -156,29 +148,45 @@ public class ListFragment extends Fragment {
     }
 
     @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        int position = adapter.getMenuPosition();
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        return onItemSelected(item.getItemId()) || super.onOptionsItemSelected(item);
+    }
 
-        switch (item.getItemId()) {
-            case R.id.card_menu_item_update:
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        return onItemSelected(item.getItemId()) || super.onContextItemSelected(item);
+    }
+
+    private boolean onItemSelected(int menuItemId) {
+        switch (menuItemId) {
+            case R.id.action_card_menu_item_update:
+                final int updatePosition = adapter.getMenuPosition();
+
                 navigation.addFragment(
-                        NoteFragment.newInstance(source.getNoteData(position)),
+                        NoteFragment.newInstance(source.getNoteData(updatePosition)),
                         true
                 );
 
                 publisher.subscribe(noteData -> {
-                    source.updateNoteData(position, noteData);
-                    adapter.notifyItemChanged(position);
+                    source.updateNoteData(updatePosition, noteData);
+                    adapter.notifyItemChanged(updatePosition);
                 });
 
                 return true;
-            case R.id.card_menu_item_delete:
-                source.deleteNoteData(position);
-                adapter.notifyItemRemoved(position);
+            case R.id.action_card_menu_item_delete:
+                final int deletePosition = adapter.getMenuPosition();
+
+                source.deleteNoteData(deletePosition);
+                adapter.notifyItemRemoved(deletePosition);
+
+                return true;
+            case R.id.action_main_menu_clear_all:
+                source.clearNoteData();
+                adapter.notifyDataSetChanged();
 
                 return true;
         }
 
-        return super.onContextItemSelected(item);
+        return false;
     }
 }

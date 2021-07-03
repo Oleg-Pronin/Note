@@ -106,7 +106,14 @@ public class NoteFragment extends Fragment {
         String description = Objects.requireNonNull(this.description.getText()).toString();
         Date date = getDateFromDatePicker();
 
-        return new NoteData(title, description, date);
+        if (noteData != null) {
+            NoteData answer = new NoteData(title, description, date);
+            answer.setId(noteData.getId());
+
+            return answer;
+        } else {
+            return new NoteData(title, description, date);
+        }
     }
 
     private void initView(View view) {

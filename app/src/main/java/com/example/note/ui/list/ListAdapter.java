@@ -16,7 +16,7 @@ import com.example.note.data.NotesSource;
 import java.text.SimpleDateFormat;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
-    private final NotesSource dataSource;
+    private NotesSource dataSource;
     private final Fragment fragment;
     // Слушатель будет устанавливаться извне
     private OnItemClickListener itemClickListener;
@@ -24,9 +24,15 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
     // Передаём в конструктор источник данных
     // Может быть и запрос к БД
-    public ListAdapter(NotesSource dataSource, Fragment fragment) {
-        this.dataSource = dataSource;
+    public ListAdapter(Fragment fragment) {
+
         this.fragment = fragment;
+    }
+
+    public void setDataSource(NotesSource dataSource) {
+        this.dataSource = dataSource;
+        // Сообщает об установке данных
+        notifyDataSetChanged();
     }
 
     public int getMenuPosition() {

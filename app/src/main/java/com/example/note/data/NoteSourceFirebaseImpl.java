@@ -1,57 +1,110 @@
 package com.example.note.data;
 
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.example.note.data.entity.NoteData;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class NoteSourceFirebaseImpl implements NotesSource {
-    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-    private static final String NOTES_COLLECTION = "notes";
-    private CollectionReference collection = firebaseFirestore.collection(NOTES_COLLECTION);
+    // TODO: Для отладки. УДАЛИТЬ
+    private static final String TAG = "NoteSourceFirebaseImpl";
 
-    private List<NoteData> noteData = new ArrayList<>();
+    private static final String NOTES_COLLECTION = "notes";
+    // Получение базы данных
+    private final FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    // Получение всех коллекции
+    private final CollectionReference collection = firebaseFirestore.collection(NOTES_COLLECTION);
+    private List<NoteData> notesData = new ArrayList<>();
 
     @Override
     public NotesSource init(NotesSourceResponse notesSourceResponse) {
-        return null;
+        // Получить всю коллекцию, отсортировать по полю "Дата"
+        collection
+                .orderBy(NoteDataMapping.Fields.DATE, Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    // При удачном считывании данных загрузим список карточек
+                    if (task.isSuccessful()) {
+                        notesData = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String id = document.getId();
+                            Map<String, Object> doc = document.getData();
+
+                            notesData.add(NoteDataMapping.toNoteData(id, doc));
+                        }
+
+                        Log.d(TAG, "Success " + notesData.size() + " qnt");
+
+                        notesSourceResponse.initialized(NoteSourceFirebaseImpl.this);
+                    } else {
+                        Log.d(TAG, "Get failed, task.exception = ", task.getException());
+                    }
+                })
+                .addOnFailureListener(e -> Log.d(TAG, "Get failed, exception = ", e));
+
+        return this;
     }
 
     @Override
     public NoteData getNoteData(int position) {
-        return noteData.get(position);
+        return notesData.get(position);
     }
 
     @Override
     public int getSize() {
-        if (noteData == null) {
+        if (notesData == null) {
             return 0;
         }
 
-        return noteData.size();
+        return notesData.size();
     }
 
     @Override
     public void addNoteData(NoteData noteData) {
-
+        collection
+                .add(NoteDataMapping.toDocument(noteData))
+                .addOnSuccessListener(documentReference -> noteData.setId(documentReference.getId()))
+                .addOnFailureListener(e -> Log.d(TAG, "Failed add, exception = ", e));
     }
 
     @Override
     public void updateNoteData(int position, NoteData noteData) {
-        String id = noteData.getId();
-        collection.document(id).set(noteData);
+        collection
+                .document(noteData.getId())
+                .set(NoteDataMapping.toDocument(noteData))
+                .addOnFailureListener(e -> Log.d(TAG, "Failed update, exception = ", e));
     }
 
     @Override
     public void deleteNoteData(int position) {
-        collection.document(noteData.get(position).getId()).delete();
-        noteData.remove(position);
+        collection
+                .document(notesData.get(position).getId())
+                .delete()
+                .addOnFailureListener(e -> Log.d(TAG, "Failed delete, exception = ", e));
+
+        notesData.remove(position);
     }
 
     @Override
     public void clearNoteData() {
+        for (NoteData noteData : notesData) {
+            collection
+                    .document(noteData.getId())
+                    .delete()
+                    .addOnFailureListener(e -> Log.d(TAG, "Failed deleteAll, exception = ", e));
+        }
 
+        notesData = new ArrayList<>();
     }
 }
