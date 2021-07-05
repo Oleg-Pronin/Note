@@ -1,4 +1,4 @@
-package com.example.note.data;
+package com.example.note.data.entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -6,27 +6,28 @@ import android.os.Parcelable;
 import java.util.Date;
 
 public class NoteData implements Parcelable {
-    private final String name;
+    private String id;
+    private final String title;
     private final String description;
-    private final Date createDate;
+    private final Date date;
 
-    public NoteData(String name, String description, Date createDate) {
-        this.name = name;
+    public NoteData(String title, String description, Date date) {
+        this.title = title;
         this.description = description;
-        this.createDate = createDate;
+        this.date = date;
     }
 
     protected NoteData(Parcel in) {
-        name = in.readString();
+        title = in.readString();
         description = in.readString();
-        createDate = new Date(in.readLong());
+        date = new Date(in.readLong());
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
+        dest.writeString(title);
         dest.writeString(description);
-        dest.writeLong(createDate.getTime());
+        dest.writeLong(date.getTime());
     }
 
     @Override
@@ -46,16 +47,23 @@ public class NoteData implements Parcelable {
         }
     };
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public Date getCreateDate() {
-        return createDate;
+    public Date getDate() {
+        return date;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }

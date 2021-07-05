@@ -1,32 +1,60 @@
 package com.example.note.ui.list;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.note.MainActivity;
+import com.example.note.Navigation;
 import com.example.note.R;
-import com.example.note.data.NoteData;
+import com.example.note.data.NoteSourceFirebaseImpl;
 import com.example.note.data.NotesSource;
-import com.example.note.data.NotesSourceImpl;
+import com.example.note.observe.Publisher;
+import com.example.note.ui.add.NoteFragment;
 import com.example.note.ui.detail.DetailFragment;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ListFragment extends Fragment {
+    private NotesSource source;
+    private ListAdapter adapter;
+    private Navigation navigation;
+    private Publisher publisher;
+
+    private boolean isMoveToFirstPosition;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        MainActivity activity = (MainActivity) context;
+        navigation = activity.getNavigation();
+        publisher = activity.getPublisher();
+    }
+
+    @Override
+    public void onDetach() {
+        navigation = null;
+        publisher = null;
+        super.onDetach();
+    }
+
     @Override
     public View onCreateView(
             LayoutInflater inflater,
@@ -35,7 +63,15 @@ public class ListFragment extends Fragment {
     ) {
         View view = inflater.inflate(R.layout.fragment_list, container, false);
 
+        initFloatingBtn(view);
         initNoteList(view);
+        setHasOptionsMenu(true);
+
+        source = new NoteSourceFirebaseImpl().init(notesSource -> {
+            adapter.notifyDataSetChanged();
+        });
+
+        adapter.setDataSource(source);
 
         return view;
     }
@@ -47,8 +83,6 @@ public class ListFragment extends Fragment {
     @SuppressLint("UseCompatLoadingForDrawables")
     private void initNoteList(View listView) {
         RecyclerView recyclerView = listView.findViewById(R.id.recycler_view_lines);
-        // Получим источник данных для списка
-        NotesSource source = new NotesSourceImpl();
 
         // Эта установка служит для повышения производительности системы
         // Указывает, что элементы одинаковые по размеру
@@ -59,30 +93,99 @@ public class ListFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         // Установим адаптер
-        final ListAdapter adapter = new ListAdapter(source);
+        adapter = new ListAdapter(this);
         recyclerView.setAdapter(adapter);
 
-        // Добавим разделитель карточек
-        DividerItemDecoration itemDecoration = new DividerItemDecoration(requireContext(), LinearLayoutManager.VERTICAL);
-        itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator, null));
-        recyclerView.addItemDecoration(itemDecoration);
+        if (isMoveToFirstPosition && source.getSize() > 0) {
+            recyclerView.scrollToPosition(0);
+            isMoveToFirstPosition = false;
+        }
 
         adapter.setOnItemClickListener((view, position) -> {
             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-            showDetailNote(source.getNoteData(position));
+            navigation.addFragment(
+                    DetailFragment.newInstance(source.getNoteData(position)),
+                    true
+            );
         });
     }
 
-    private void showDetailNote(NoteData noteData) {
-        DetailFragment detail = DetailFragment.newInstance(noteData);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    private void initFloatingBtn(View view) {
+        FloatingActionButton floatingBtn = view.findViewById(R.id.fab);
 
-        fragmentTransaction.addToBackStack(null);
+        if (floatingBtn.getVisibility() == View.INVISIBLE) {
+            floatingBtn.setVisibility(View.VISIBLE);
+        }
 
-        fragmentTransaction.replace(R.id.fragment_container, detail);
+        floatingBtn.setOnClickListener(v -> onClickAddNote());
+    }
 
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.commit();
+    private void onClickAddNote() {
+        navigation.addFragment(new NoteFragment(), true);
+
+        publisher.subscribe(noteData -> {
+            source.addNoteData(noteData);
+            adapter.notifyItemInserted(source.getSize() - 1);
+        });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.activity_main_menu, menu);
+    }
+
+    @Override
+    public void onCreateContextMenu(
+        @NonNull ContextMenu menu,
+        @NonNull View v,
+        @Nullable ContextMenu.ContextMenuInfo menuInfo
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = requireActivity().getMenuInflater();
+
+        inflater.inflate(R.menu.card_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        return onItemSelected(item.getItemId()) || super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        return onItemSelected(item.getItemId()) || super.onContextItemSelected(item);
+    }
+
+    private boolean onItemSelected(int menuItemId) {
+        switch (menuItemId) {
+            case R.id.action_card_menu_item_update:
+                final int updatePosition = adapter.getMenuPosition();
+
+                navigation.addFragment(
+                        NoteFragment.newInstance(source.getNoteData(updatePosition)),
+                        true
+                );
+
+                publisher.subscribe(noteData -> {
+                    source.updateNoteData(updatePosition, noteData);
+                    adapter.notifyItemChanged(updatePosition);
+                });
+
+                return true;
+            case R.id.action_card_menu_item_delete:
+                final int deletePosition = adapter.getMenuPosition();
+
+                source.deleteNoteData(deletePosition);
+                adapter.notifyItemRemoved(deletePosition);
+
+                return true;
+            case R.id.action_main_menu_clear_all:
+                source.clearNoteData();
+                adapter.notifyDataSetChanged();
+
+                return true;
+        }
+
+        return false;
     }
 }

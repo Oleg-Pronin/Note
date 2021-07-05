@@ -5,43 +5,46 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.os.Bundle;
 
+import com.example.note.observe.Publisher;
 import com.example.note.ui.about.AboutFragment;
-import com.example.note.ui.add.AddFragment;
 import com.example.note.ui.list.ListFragment;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
+    private FirebaseFirestore db;
+    private Navigation navigation;
+    private final Publisher publisher = new Publisher();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        navigation = new Navigation(getSupportFragmentManager());
+        db = FirebaseFirestore.getInstance();
 
         initView();
-        addFragment(new com.example.note.ui.list.ListFragment());
+        getNavigation().addFragment(new ListFragment(), false);
     }
 
     private void initView() {
         Toolbar toolbar = initToolbar();
         initDrawer(toolbar);
-        initFloatingBtn();
     }
 
     private Toolbar initToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
         return toolbar;
     }
 
-    // регистрация drawer
+    // Регистрация drawer
     private void initDrawer(Toolbar toolbar) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
 
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (navigateFragment(id)){
+            if (navigateFragment(id)) {
                 drawer.closeDrawer(GravityCompat.START);
                 return true;
             }
@@ -71,37 +74,34 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void initFloatingBtn() {
-        FloatingActionButton floatingBtn = findViewById(R.id.fab);
-
-        floatingBtn.setOnClickListener(v -> addFragment(new AddFragment()));
-    }
-
     private boolean navigateFragment(int id) {
         switch (id) {
             case R.id.nav_list:
-                addFragment(new ListFragment());
+                getNavigation().addFragment(new ListFragment(), false);
                 return true;
             case R.id.nav_about:
-                addFragment(new AboutFragment());
+                getNavigation().addFragment(new AboutFragment(), true);
                 return true;
         }
 
         return false;
     }
 
-    public void addFragment(Fragment fragment) {
-        //Получить менеджер фрагментов
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        // Открыть транзакцию
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 
-        if (!(fragment instanceof ListFragment)) {
-            fragmentTransaction.addToBackStack(null);
-        }
+    public Navigation getNavigation() {
+        return navigation;
+    }
 
-        // Закрыть транзакцию
-        fragmentTransaction.commit();
+    public Publisher getPublisher() {
+        return publisher;
+    }
+
+    public FirebaseFirestore getDb() {
+        return db;
     }
 }

@@ -6,23 +6,37 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.note.R;
-import com.example.note.data.NoteData;
+import com.example.note.data.entity.NoteData;
 import com.example.note.data.NotesSource;
 
 import java.text.SimpleDateFormat;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
-    private final NotesSource dataSource;
+    private NotesSource dataSource;
+    private final Fragment fragment;
     // Слушатель будет устанавливаться извне
     private OnItemClickListener itemClickListener;
+    private int menuPosition;
 
     // Передаём в конструктор источник данных
     // Может быть и запрос к БД
-    public ListAdapter(NotesSource dataSource) {
+    public ListAdapter(Fragment fragment) {
+
+        this.fragment = fragment;
+    }
+
+    public void setDataSource(NotesSource dataSource) {
         this.dataSource = dataSource;
+        // Сообщает об установке данных
+        notifyDataSetChanged();
+    }
+
+    public int getMenuPosition() {
+        return menuPosition;
     }
 
     @NonNull
@@ -45,7 +59,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return dataSource.size();
+        return dataSource.getSize();
     }
 
     public void setOnItemClickListener(OnItemClickListener itemClickListener) {
@@ -71,6 +85,8 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
             date = itemView.findViewById(R.id.listNoteDate);
             description = itemView.findViewById(R.id.listNoteDescription);
 
+            registerContextMenu(itemView);
+
             itemView.setOnClickListener(v -> {
                 if (itemClickListener != null) {
                     itemClickListener.onItemClick(v, getAdapterPosition());
@@ -78,9 +94,20 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
             });
         }
 
+        private void registerContextMenu(@NonNull View itemView) {
+            if (fragment != null){
+                itemView.setOnLongClickListener(v -> {
+                    menuPosition = getLayoutPosition();
+                    return false;
+                });
+
+                fragment.registerForContextMenu(itemView);
+            }
+        }
+
         public void setData(NoteData noteData){
-            title.setText(noteData.getName());
-            date.setText(new SimpleDateFormat("dd.MM.yy").format(noteData.getCreateDate()));
+            title.setText(noteData.getTitle());
+            date.setText(new SimpleDateFormat("dd.MM.yy").format(noteData.getDate()));
             description.setText(noteData.getDescription());
         }
     }
