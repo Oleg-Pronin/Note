@@ -73,6 +73,8 @@ public class NoteSourceFirebaseImpl implements NotesSource {
                 .add(NoteDataMapping.toDocument(noteData))
                 .addOnSuccessListener(documentReference -> noteData.setId(documentReference.getId()))
                 .addOnFailureListener(e -> Log.d(TAG, "Failed add, exception = ", e));
+
+        notesData.add(noteData);
     }
 
     @Override
@@ -81,6 +83,8 @@ public class NoteSourceFirebaseImpl implements NotesSource {
                 .document(noteData.getId())
                 .set(NoteDataMapping.toDocument(noteData))
                 .addOnFailureListener(e -> Log.d(TAG, "Failed update, exception = ", e));
+
+        notesData.set(position, noteData);
     }
 
     @Override
