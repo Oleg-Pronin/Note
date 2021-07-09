@@ -10,4 +10,7 @@
     <string name="menu_list">Список</string>
     <string name="menu_about">О приложении</string>
     <string name="clear_list">Очистить список</string>
+    <string name="delete_dialog_message">Вы уверены, что хотите удалить заметку?</string>
+    <string name="delete_dialog_yes">Да</string>
+    <string name="delete_dialog_no">Нет</string>
 </resources>

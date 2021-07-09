@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.note.MainActivity;
 import com.example.note.Navigation;
@@ -26,6 +27,8 @@ import com.example.note.data.NoteSourceFirebaseImpl;
 import com.example.note.data.NotesSource;
 import com.example.note.observe.Publisher;
 import com.example.note.ui.add.NoteFragment;
+import com.example.note.ui.bottomSheet.DeleteBottomSheetFragment;
+import com.example.note.ui.bottomSheet.interfaces.OnDeleteDialogListener;
 import com.example.note.ui.detail.DetailFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -37,13 +40,14 @@ public class ListFragment extends Fragment {
     private ListAdapter adapter;
     private Navigation navigation;
     private Publisher publisher;
+    private MainActivity activity;
 
     private boolean isMoveToFirstPosition;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        MainActivity activity = (MainActivity) context;
+        activity = (MainActivity) context;
         navigation = activity.getNavigation();
         publisher = activity.getPublisher();
     }
@@ -173,10 +177,10 @@ public class ListFragment extends Fragment {
 
                 return true;
             case R.id.action_card_menu_item_delete:
-                final int deletePosition = adapter.getMenuPosition();
+                DeleteBottomSheetFragment deleteBottomSheetFragment = DeleteBottomSheetFragment.newInstance();
+                deleteBottomSheetFragment.setOnDialogListener(dialogListener);
 
-                source.deleteNoteData(deletePosition);
-                adapter.notifyItemRemoved(deletePosition);
+                activity.initDialog(deleteBottomSheetFragment);
 
                 return true;
             case R.id.action_main_menu_clear_all:
@@ -188,4 +192,20 @@ public class ListFragment extends Fragment {
 
         return false;
     }
+
+    // Слушатель диалога, сюда попадает управление при выборе пользователем кнопки в диалоге
+    private final OnDeleteDialogListener dialogListener = new OnDeleteDialogListener() {
+        @Override
+        public void onDialogYes() {
+            final int deletePosition = adapter.getMenuPosition();
+
+            source.deleteNoteData(deletePosition);
+            adapter.notifyItemRemoved(deletePosition);
+        }
+
+        @Override
+        public void onDialogNo() {
+
+        }
+    };
 }

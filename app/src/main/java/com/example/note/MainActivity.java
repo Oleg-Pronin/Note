@@ -10,11 +10,10 @@ import android.os.Bundle;
 import com.example.note.observe.Publisher;
 import com.example.note.ui.about.AboutFragment;
 import com.example.note.ui.list.ListFragment;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
-    private FirebaseFirestore db;
     private Navigation navigation;
     private final Publisher publisher = new Publisher();
 
@@ -23,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         navigation = new Navigation(getSupportFragmentManager());
-        db = FirebaseFirestore.getInstance();
 
         initView();
         getNavigation().addFragment(new ListFragment(), false);
@@ -101,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         return publisher;
     }
 
-    public FirebaseFirestore getDb() {
-        return db;
+    public void initDialog(BottomSheetDialogFragment bottomSheetDialogFragment) {
+        bottomSheetDialogFragment.show(getSupportFragmentManager(), "dialog_fragment");
     }
 }

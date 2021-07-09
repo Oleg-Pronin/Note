@@ -25,7 +25,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
     // Передаём в конструктор источник данных
     // Может быть и запрос к БД
     public ListAdapter(Fragment fragment) {
-
         this.fragment = fragment;
     }
 
