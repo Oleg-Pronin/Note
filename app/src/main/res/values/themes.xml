@@ -17,15 +17,26 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.Note.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    <style name="Theme.Note.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 
     <style name="Theme.Note.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Toolbar.Primary" />
 
     <style name="AppBottomSheetDialogTheme" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="android:backgroundTint">@color/cornflower</item>
         <item name="bottomSheetStyle">@style/AppModalStyle</item>
     </style>
 
     <style name="AppModalStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@drawable/background_bottom_sheet_rounded_dialog</item>
+        <item name="android:backgroundTint">@color/white</item>
+    </style>
+
+    <style name="Theme.Note.BtnDelete">
+        <item name="android:layout_width">100dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/link_water</item>
     </style>
 </resources>
