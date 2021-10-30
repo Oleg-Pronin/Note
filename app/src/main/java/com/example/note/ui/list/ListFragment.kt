@@ -1,211 +1,181 @@
-package com.example.note.ui.list;
+package com.example.note.ui.list
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.ContextMenu;
-import android.view.HapticFeedbackConstants;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
-import com.example.note.MainActivity;
-import com.example.note.Navigation;
-import com.example.note.R;
-import com.example.note.data.NoteSourceFirebaseImpl;
-import com.example.note.data.NotesSource;
-import com.example.note.observe.Publisher;
-import com.example.note.ui.add.NoteFragment;
-import com.example.note.ui.bottomSheet.DeleteBottomSheetFragment;
-import com.example.note.ui.bottomSheet.interfaces.OnDeleteDialogListener;
-import com.example.note.ui.detail.DetailFragment;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.note.data.NotesSource
+import com.example.note.Navigation
+import com.example.note.MainActivity
+import android.os.Bundle
+import com.example.note.R
+import com.example.note.data.NoteSourceFirebaseImpl
+import android.annotation.SuppressLint
+import android.content.Context
+import android.view.*
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.note.ui.detail.DetailFragment
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.example.note.ui.add.NoteFragment
+import com.example.note.data.entity.NoteData
+import android.view.ContextMenu.ContextMenuInfo
+import androidx.fragment.app.Fragment
+import com.example.note.observe.Publisher
+import com.example.note.ui.bottomSheet.DeleteBottomSheetFragment
+import com.example.note.ui.bottomSheet.interfaces.OnDeleteDialogListener
 
 /**
- * A simple {@link Fragment} subclass.
+ * A simple [Fragment] subclass.
  */
-public class ListFragment extends Fragment {
-    private NotesSource source;
-    private ListAdapter adapter;
-    private Navigation navigation;
-    private Publisher publisher;
-    private MainActivity activity;
+class ListFragment : Fragment() {
+    private var source: NotesSource? = null
+    private lateinit var adapter: ListAdapter
+    private lateinit var navigation: Navigation
+    private lateinit var publisher: Publisher
+    private lateinit var activity: MainActivity
+    private var isMoveToFirstPosition = false
 
-    private boolean isMoveToFirstPosition;
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        activity = (MainActivity) context;
-        navigation = activity.getNavigation();
-        publisher = activity.getPublisher();
+        activity = context as MainActivity
+        navigation = activity.navigation
+        publisher = activity.publisher
     }
 
-    @Override
-    public void onDetach() {
-        navigation = null;
-        publisher = null;
-        super.onDetach();
-    }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_list, container, false)
 
-    @Override
-    public View onCreateView(
-            LayoutInflater inflater,
-            ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-        View view = inflater.inflate(R.layout.fragment_list, container, false);
+        initFloatingBtn(view)
+        initNoteList(view)
+        setHasOptionsMenu(true)
 
-        initFloatingBtn(view);
-        initNoteList(view);
-        setHasOptionsMenu(true);
+        source = NoteSourceFirebaseImpl().init { adapter.notifyDataSetChanged() }
+        adapter.setDataSource(source)
 
-        source = new NoteSourceFirebaseImpl().init(notesSource -> {
-            adapter.notifyDataSetChanged();
-        });
-
-        adapter.setDataSource(source);
-
-        return view;
-    }
-
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        return view
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    private void initNoteList(View listView) {
-        RecyclerView recyclerView = listView.findViewById(R.id.recycler_view_lines);
+    private fun initNoteList(listView: View) {
+        val recyclerView: RecyclerView = listView.findViewById(R.id.recycler_view_lines)
 
         // Эта установка служит для повышения производительности системы
         // Указывает, что элементы одинаковые по размеру
-        recyclerView.setHasFixedSize(true);
+        recyclerView.setHasFixedSize(true)
 
         // Будем работать со встроенным менеджером
-        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
-        recyclerView.setLayoutManager(layoutManager);
+        val layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.layoutManager = layoutManager
 
         // Установим адаптер
-        adapter = new ListAdapter(this);
-        recyclerView.setAdapter(adapter);
+        adapter = ListAdapter(this)
 
-        if (isMoveToFirstPosition && source.getSize() > 0) {
-            recyclerView.scrollToPosition(0);
-            isMoveToFirstPosition = false;
+        recyclerView.adapter = adapter
+        if (isMoveToFirstPosition && source!!.size > 0) {
+            recyclerView.scrollToPosition(0)
+            isMoveToFirstPosition = false
         }
 
-        adapter.setOnItemClickListener((view, position) -> {
-            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+        adapter.setOnItemClickListener { view: View, position: Int ->
+            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
             navigation.addFragment(
-                    DetailFragment.newInstance(source.getNoteData(position)),
-                    true
-            );
-        });
+                DetailFragment.newInstance(source!!.getNoteData(position)),
+                true
+            )
+        }
     }
 
-    private void initFloatingBtn(View view) {
-        FloatingActionButton floatingBtn = view.findViewById(R.id.fab);
+    private fun initFloatingBtn(view: View) {
+        val floatingBtn: FloatingActionButton = view.findViewById(R.id.fab)
 
-        if (floatingBtn.getVisibility() == View.INVISIBLE) {
-            floatingBtn.setVisibility(View.VISIBLE);
+        if (floatingBtn.visibility == View.INVISIBLE) {
+            floatingBtn.visibility = View.VISIBLE
         }
 
-        floatingBtn.setOnClickListener(v -> onClickAddNote());
+        floatingBtn.setOnClickListener { onClickAddNote() }
     }
 
-    private void onClickAddNote() {
-        navigation.addFragment(new NoteFragment(), true);
+    private fun onClickAddNote() {
+        navigation.addFragment(NoteFragment(), true)
 
-        publisher.subscribe(noteData -> {
-            source.addNoteData(noteData);
-            adapter.notifyItemInserted(source.getSize() - 1);
-        });
+        publisher.subscribe { noteData ->
+            source!!.addNoteData(noteData)
+            adapter.notifyItemInserted(source!!.size - 1)
+        }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.activity_main_menu, menu);
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.activity_main_menu, menu)
     }
 
-    @Override
-    public void onCreateContextMenu(
-        @NonNull ContextMenu menu,
-        @NonNull View v,
-        @Nullable ContextMenu.ContextMenuInfo menuInfo
+    override fun onCreateContextMenu(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenuInfo?,
     ) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = requireActivity().getMenuInflater();
-
-        inflater.inflate(R.menu.card_menu, menu);
+        super.onCreateContextMenu(menu, v, menuInfo)
+        val inflater = requireActivity().menuInflater
+        inflater.inflate(R.menu.card_menu, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        return onItemSelected(item.getItemId()) || super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return onItemSelected(item.itemId) || super.onOptionsItemSelected(item)
     }
 
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        return onItemSelected(item.getItemId()) || super.onContextItemSelected(item);
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        return onItemSelected(item.itemId) || super.onContextItemSelected(item)
     }
 
-    private boolean onItemSelected(int menuItemId) {
-        switch (menuItemId) {
-            case R.id.action_card_menu_item_update:
-                final int updatePosition = adapter.getMenuPosition();
+    private fun onItemSelected(menuItemId: Int): Boolean {
+        return when (menuItemId) {
+            R.id.action_card_menu_item_update -> {
+                val updatePosition = adapter.menuPosition
 
                 navigation.addFragment(
-                        NoteFragment.newInstance(source.getNoteData(updatePosition)),
-                        true
-                );
+                    NoteFragment.newInstance(source!!.getNoteData(updatePosition)),
+                    true
+                )
 
-                publisher.subscribe(noteData -> {
-                    source.updateNoteData(updatePosition, noteData);
-                    adapter.notifyItemChanged(updatePosition);
-                });
+                publisher.subscribe { noteData: NoteData? ->
+                    source!!.updateNoteData(updatePosition, noteData)
+                    adapter.notifyItemChanged(updatePosition)
+                }
 
-                return true;
-            case R.id.action_card_menu_item_delete:
-                DeleteBottomSheetFragment deleteBottomSheetFragment = DeleteBottomSheetFragment.newInstance();
-                deleteBottomSheetFragment.setOnDialogListener(dialogListener);
+                true
+            }
 
-                activity.initDialog(deleteBottomSheetFragment);
+            R.id.action_card_menu_item_delete -> {
+                val deleteBottomSheetFragment = DeleteBottomSheetFragment.newInstance()
 
-                return true;
-            case R.id.action_main_menu_clear_all:
-                source.clearNoteData();
-                adapter.notifyDataSetChanged();
+                deleteBottomSheetFragment.setOnDialogListener(dialogListener)
+                activity.initDialog(deleteBottomSheetFragment)
 
-                return true;
+                true
+            }
+
+            R.id.action_main_menu_clear_all -> {
+                source!!.clearNoteData()
+                adapter.notifyDataSetChanged()
+
+                true
+            }
+
+            else -> false
         }
-
-        return false;
     }
 
     // Слушатель диалога, сюда попадает управление при выборе пользователем кнопки в диалоге
-    private final OnDeleteDialogListener dialogListener = new OnDeleteDialogListener() {
-        @Override
-        public void onDialogYes() {
-            final int deletePosition = adapter.getMenuPosition();
+    private val dialogListener: OnDeleteDialogListener = object : OnDeleteDialogListener {
+        override fun onDialogYes() {
+            val deletePosition = adapter.menuPosition
 
-            source.deleteNoteData(deletePosition);
-            adapter.notifyItemRemoved(deletePosition);
+            source!!.deleteNoteData(deletePosition)
+            adapter.notifyItemRemoved(deletePosition)
         }
 
-        @Override
-        public void onDialogNo() {
-
-        }
-    };
+        override fun onDialogNo() {}
+    }
 }
